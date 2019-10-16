@@ -15,10 +15,12 @@ https://polar-caverns-52350.herokuapp.com/
 ## TO DO
 1. refactor route /update. Make one session for all request to HackerNews
 2. Add more loging
-2. refactor app -> make something like
+3. refactor app -> make something like
 
 app.py
 routes.py
 utils.py
 views.py
+
+4. Add unit-tests
 
