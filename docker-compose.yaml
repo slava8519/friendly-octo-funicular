@@ -1,0 +1,10 @@
+version: '3.6'
+
+services:
+  info:
+    build: .
+    volumes:
+      - ./:/app
+    command: gunicorn hackngrabber.app:app -b :8080 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --reload --access-logfile -
+    ports:
+      - "8080:8080"
