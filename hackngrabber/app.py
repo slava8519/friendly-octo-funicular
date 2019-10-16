@@ -12,6 +12,10 @@ import time
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 routes = web.RouteTableDef()
 
+# async def get_session(app):
+#     async with ClientSession() as session:
+#         return session
+
 async def fetch(session,url):
     async with session.get(url) as resp:
         return await resp.text()
@@ -57,11 +61,14 @@ async def get_news(session):
     news = await extract_news_from_newsitems(items)
     return news
 
+async def hackernews_scan(session):
+    news = await get_news(session)
+    await push_news_to_bd(news)
+
 async def hackernews_scan_task(app):
     async with ClientSession() as session:
         while True:
-            news = await get_news(session)
-            await push_news_to_bd(news)
+            await hackernews_scan(session)
             await asyncio.sleep(10)
 
 async def main_news_task(app):
@@ -157,10 +164,10 @@ async def check_posts_keys(limit, offset, order,orderType):
 
     return check_errors
 
-@routes.get('/')
-async def handle(request):
-    responce_obj = { 'status':'successs' }
-    return web.json_response(responce_obj,status=200)
+# @routes.get('/')
+# async def handle(request):
+#     responce_obj = { 'status':'successs' }
+#     return web.json_response(responce_obj,status=200)
 
 @routes.get('/posts')
 async def posts(request):
@@ -172,6 +179,19 @@ async def posts(request):
     
     responce_obj = await pull_news_from_bd(order,offset,limit,orderType)
     return web.json_response(responce_obj,status=200)
+
+@routes.get('/update')
+async def posts_update(request):
+    try:
+        async with ClientSession() as session:
+            await hackernews_scan(session)
+        responce_obj = { 'status':'successs' }
+        return web.json_response(responce_obj,status=200)
+    except Exception as e:
+        responce_obj = { 'status':'fail' ,
+                        'error':f'{e}'}
+        return web.json_response(responce_obj,status=500)
+
 
 def init_app(argv=None) -> web.Application:
     app = web.Application()
