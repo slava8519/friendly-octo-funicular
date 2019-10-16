@@ -1,0 +1,6 @@
+aiohttp
+bs4
+uvloop
+gunicorn
+aiosqlite
+lxml
